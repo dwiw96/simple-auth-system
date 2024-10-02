@@ -1,0 +1,11 @@
+services:
+  postgres:
+    container_name: pg_auth_system_container
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=dwiw
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=auth_system_go
+    restart: no
