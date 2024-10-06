@@ -55,7 +55,7 @@ func (r *authRepository) ReadUser(email string) (result *auth.User, err error) {
 	row := r.pool.QueryRow(r.ctx, query, email)
 
 	var user auth.User
-	err = row.Scan(&user.ID, &user.FirstName, &user.MiddleName, &user.LastName, &user.Email, &user.Address, &user.Gender, &user.MaritalStatusID, &user.HashedPassword, &user.CreatedAt, &user.MaritalStatus)
+	err = row.Scan(&user.ID, &user.FirstName, &user.MiddleName, &user.LastName, &user.Email, &user.Address, &user.Gender, &user.MaritalStatusID, &user.HashedPassword, &user.CreatedAt, &user.IsVerified, &user.MaritalStatus)
 	if err != nil {
 		errMsg := fmt.Errorf("failed read user, err: %v", err)
 		return nil, errMsg
@@ -102,7 +102,7 @@ func (r *authRepository) InsertUser(input auth.User) (result *auth.User, err err
 	row := r.pool.QueryRow(r.ctx, query, input.FirstName, input.MiddleName, input.LastName, input.Email, input.Address, input.Gender, input.MaritalStatusID, input.HashedPassword)
 
 	var user auth.User
-	err = row.Scan(&user.ID, &user.FirstName, &user.MiddleName, &user.LastName, &user.Email, &user.Address, &user.Gender, &user.MaritalStatusID, &user.HashedPassword, &user.CreatedAt)
+	err = row.Scan(&user.ID, &user.FirstName, &user.MiddleName, &user.LastName, &user.Email, &user.Address, &user.Gender, &user.MaritalStatusID, &user.HashedPassword, &user.CreatedAt, &user.IsVerified)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to insert user err: %v", err)
 		return nil, errMsg
@@ -144,4 +144,34 @@ func (r *authRepository) LoadKey() (key *rsa.PrivateKey, err error) {
 	}
 
 	return nil, errors.New("no private key found in database")
+}
+
+func (r *authRepository) UpdateUserIsVerified(id int64, email string) (err error) {
+	query := "UPDATE users SET is_verified = TRUE WHERE id = $1 AND email = $2;"
+
+	res, err := r.pool.Exec(r.ctx, query, id, email)
+	if err != nil {
+		return fmt.Errorf("failed to update user email verified, err: %v", err)
+	}
+
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("failed to verifying, user still unverified")
+	}
+
+	return
+}
+
+func (r *authRepository) DeleteUser(id int64, email string) (err error) {
+	query := "DELETE FROM users WHERE id = $1 AND email = $2;"
+
+	res, err := r.pool.Exec(r.ctx, query, id, email)
+	if err != nil {
+		return fmt.Errorf("failed to delete user, err: %v", err)
+	}
+
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("failed to unverifying, user data still not deleted")
+	}
+
+	return
 }
