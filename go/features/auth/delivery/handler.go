@@ -38,9 +38,13 @@ func NewAuthDelivery(router *gin.Engine, service auth.ServiceInterface, pool *pg
 	en_translations.RegisterDefaultTranslations(handler.validate, trans)
 	handler.trans = trans
 
-	router.POST("/api/signup", handler.SignUp)
-	router.POST("/api/login", handler.LogIn)
-	router.POST("/api/logout", mid.AuthMiddleware(ctx, pool, client), handler.LogOut)
+	router.Use(mid.AuthMiddleware(ctx, pool, client))
+
+	router.POST("/api/signup", handler.signUp)
+	router.POST("/api/login", handler.logIn)
+	router.POST("/api/logout", handler.logOut)
+	router.PUT("/api/email/verification", handler.emailVerification)
+	router.PUT("/api/email/unverification", handler.emailUnVerification)
 }
 
 func translateError(trans ut.Translator, err error) (errTrans []string) {
@@ -53,7 +57,7 @@ func translateError(trans ut.Translator, err error) (errTrans []string) {
 	return
 }
 
-func (d *authDelivery) SignUp(c *gin.Context) {
+func (d *authDelivery) signUp(c *gin.Context) {
 	var request signupRequest
 
 	err := c.BindJSON(&request)
@@ -84,7 +88,7 @@ func (d *authDelivery) SignUp(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, response)
 }
 
-func (d *authDelivery) LogIn(c *gin.Context) {
+func (d *authDelivery) logIn(c *gin.Context) {
 	var request signinRequest
 
 	err := c.BindJSON(&request)
@@ -113,12 +117,11 @@ func (d *authDelivery) LogIn(c *gin.Context) {
 	c.IndentedJSON(200, response)
 }
 
-func (d *authDelivery) LogOut(c *gin.Context) {
+func (d *authDelivery) logOut(c *gin.Context) {
 	authPayload, isExists := c.Keys["payloadKey"].(*auth.JwtPayload)
 
 	if !isExists {
 		responses.ErrorJSON(c, 401, []string{"token is wrong"}, c.Request.RemoteAddr)
-		c.JSON(401, "token is wrong")
 		return
 	}
 
@@ -129,4 +132,40 @@ func (d *authDelivery) LogOut(c *gin.Context) {
 	}
 
 	c.JSON(200, "logout success")
+}
+
+func (d *authDelivery) emailVerification(c *gin.Context) {
+	authPayload, isExists := c.Keys["payloadKey"].(*auth.JwtPayload)
+	if !isExists {
+		responses.ErrorJSON(c, 401, []string{"token is wrong"}, c.Request.RemoteAddr)
+		c.JSON(401, "token is wrong")
+		return
+	}
+
+	code, err := d.service.EmailVerification(authPayload.UserID, authPayload.Email)
+	if err != nil {
+		responses.ErrorJSON(c, code, []string{err.Error()}, c.Request.RemoteAddr)
+		return
+	}
+
+	response := responses.SuccessResponse("email is verified")
+	c.IndentedJSON(200, response)
+}
+
+func (d *authDelivery) emailUnVerification(c *gin.Context) {
+	authPayload, isExists := c.Keys["payloadKey"].(*auth.JwtPayload)
+	if !isExists {
+		responses.ErrorJSON(c, 401, []string{"token is wrong"}, c.Request.RemoteAddr)
+		c.JSON(401, "token is wrong")
+		return
+	}
+
+	code, err := d.service.DeleteUser(authPayload.UserID, authPayload.Email)
+	if err != nil {
+		responses.ErrorJSON(c, code, []string{err.Error()}, c.Request.RemoteAddr)
+		return
+	}
+
+	response := responses.SuccessResponse("user is unverify and deleted")
+	c.IndentedJSON(200, response)
 }

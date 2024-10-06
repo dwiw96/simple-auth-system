@@ -32,6 +32,7 @@ type User struct {
 	HashedPassword  string `json:"hashed_password"`
 	CreatedAt       time.Time
 	MaritalStatus   string
+	IsVerified      bool
 }
 
 type MaritalStatus struct {
@@ -68,12 +69,17 @@ type RepositoryInterface interface {
 	ReadMaritalStatus(status string) (result *MaritalStatus, err error)
 	InsertUser(input User) (result *User, err error)
 	LoadKey() (key *rsa.PrivateKey, err error)
+	UpdateUserIsVerified(id int64, email string) (err error)
+	DeleteUser(id int64, email string) (err error)
 }
 
 type ServiceInterface interface {
 	SignUp(input SignupRequest) (user *User, code int, err error)
 	LogIn(input LoginRequest) (user *User, token string, code int, err error)
 	LogOut(payload JwtPayload) error
+	SendEmailVerification(user User) (code int, err error)
+	EmailVerification(userID int64, email string) (code int, err error)
+	DeleteUser(userID int64, email string) (code int, err error)
 }
 
 type CacheInterface interface {

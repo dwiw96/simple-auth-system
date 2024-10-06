@@ -26,6 +26,7 @@ var (
 	serviceTest auth.ServiceInterface
 	pool        *pgxpool.Pool
 	ctx         context.Context
+	repoTest    auth.RepositoryInterface
 )
 
 func TestMain(m *testing.M) {
@@ -53,7 +54,7 @@ func TestMain(m *testing.M) {
 	ctx, cancel = context.WithTimeout(context.Background(), 1000*time.Second)
 	defer cancel()
 
-	repoTest := repo.NewAuthRepository(pool, ctx)
+	repoTest = repo.NewAuthRepository(pool, ctx)
 	cacheTest := cache.NewAuthCache(client, ctx)
 	serviceTest = NewAuthService(repoTest, cacheTest)
 
@@ -86,6 +87,7 @@ func createUser(t *testing.T) (user *auth.User, signupReq auth.SignupRequest) {
 	assert.Equal(t, auth.MaritalStatusMap[input.MaritalStatus], res.MaritalStatusID)
 	assert.Equal(t, input.MaritalStatus, res.MaritalStatus)
 	assert.NotEqual(t, input.Password, res.HashedPassword)
+	assert.False(t, res.IsVerified)
 
 	return res, input
 }
@@ -165,6 +167,7 @@ func TestSignUp(t *testing.T) {
 				assert.Equal(t, auth.MaritalStatusMap[test.input.MaritalStatus], res.MaritalStatusID)
 				assert.Equal(t, test.input.MaritalStatus, res.MaritalStatus)
 				assert.NotEqual(t, test.input.Password, res.HashedPassword)
+				assert.False(t, res.IsVerified)
 			} else {
 				require.Error(t, err)
 				require.NotZero(t, code)
@@ -228,6 +231,7 @@ func TestLogIn(t *testing.T) {
 				assert.Equal(t, user.MaritalStatus, res.MaritalStatus)
 				assert.Equal(t, user.HashedPassword, res.HashedPassword)
 				assert.NotZero(t, res.CreatedAt)
+				assert.False(t, res.IsVerified)
 			} else {
 				require.Error(t, err)
 				assert.Empty(t, token)
@@ -245,7 +249,7 @@ func TestLogIn(t *testing.T) {
 }
 
 func TestLogOut(t *testing.T) {
-	key, err := middleware.LoadKey(ctx, pool)
+	key, err := repoTest.LoadKey()
 	require.NoError(t, err)
 	require.NotNil(t, key)
 
@@ -257,7 +261,7 @@ func TestLogOut(t *testing.T) {
 		Gender:          generator.CreateRandomGender(),
 		MaritalStatusID: generator.CreateRandomMaritalStatusID(),
 	}
-	token, err := middleware.CreateToken(user, key)
+	token, err := middleware.CreateToken(user, 5, key)
 	require.NoError(t, err)
 	require.NotZero(t, len(token))
 	t.Log("TOKEN:", token)
@@ -267,4 +271,130 @@ func TestLogOut(t *testing.T) {
 
 	err = serviceTest.LogOut(*payload)
 	require.NoError(t, err)
+}
+
+func TestCreateLinkVerification(t *testing.T) {
+	tests := []struct {
+		name  string
+		token string
+	}{
+		{
+			name:  "success",
+			token: "bearer " + generator.CreateRandomString(700),
+		}, {
+			name:  "success",
+			token: "bearer " + generator.CreateRandomString(700),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			verify, unverify := createLinkVerification(test.token)
+			assert.Equal(t, fmt.Sprintf("http://localhost:9090/fe/email/verification?token=%s", test.token[7:]), verify)
+			assert.Equal(t, fmt.Sprintf("http://localhost:9090/fe/email/unverification?token=%s", test.token[7:]), unverify)
+		})
+	}
+}
+
+func TestSendEmailVerification(t *testing.T) {
+	user := auth.User{
+		ID:       0,
+		Fullname: "Dwi Wahyudi",
+		Email:    "dwiwahyudi1996@gmail.com",
+		Address:  "Indonesia",
+	}
+
+	code, err := serviceTest.SendEmailVerification(user)
+	require.NoError(t, err)
+	require.Zero(t, code)
+}
+
+func TestEmailVerification(t *testing.T) {
+	go func() {
+		for i := 0; i < 5; i++ {
+			go t.Run("success", func(t *testing.T) {
+				user, _ := createUser(t)
+				require.NotNil(t, user)
+
+				code, err := serviceTest.EmailVerification(user.ID, user.Email)
+				require.NoError(t, err)
+				assert.Zero(t, code)
+
+				res, err := repoTest.ReadUser(user.Email)
+				require.NoError(t, err)
+				assert.True(t, res.IsVerified)
+			})
+		}
+	}()
+
+	go t.Run("fail_wrong_email", func(t *testing.T) {
+		user, _ := createUser(t)
+		require.NotNil(t, user)
+
+		code, err := serviceTest.EmailVerification(user.ID, "a"+user.Email)
+		require.Error(t, err)
+		assert.Equal(t, 400, code)
+
+		res, err := repoTest.ReadUser(user.Email)
+		require.NoError(t, err)
+		assert.False(t, res.IsVerified)
+	})
+
+	go t.Run("fail_wrong_id", func(t *testing.T) {
+		user, _ := createUser(t)
+		require.NotNil(t, user)
+
+		code, err := serviceTest.EmailVerification(0, user.Email)
+		require.Error(t, err)
+		assert.Equal(t, 400, code)
+
+		res, err := repoTest.ReadUser(user.Email)
+		require.NoError(t, err)
+		assert.False(t, res.IsVerified)
+	})
+}
+
+func TestDeleteUser(t *testing.T) {
+	go func() {
+		for i := 0; i < 5; i++ {
+			go t.Run("success", func(t *testing.T) {
+				user, _ := createUser(t)
+				require.NotNil(t, user)
+
+				code, err := serviceTest.DeleteUser(user.ID, user.Email)
+				require.NoError(t, err)
+				assert.Zero(t, code)
+
+				res, err := repoTest.ReadUser(user.Email)
+				require.Error(t, err)
+				assert.Nil(t, res)
+			})
+		}
+	}()
+
+	go t.Run("fail_wrong_email", func(t *testing.T) {
+		user, _ := createUser(t)
+		require.NotNil(t, user)
+
+		code, err := serviceTest.DeleteUser(user.ID, "a"+user.Email)
+		require.Error(t, err)
+		assert.Equal(t, 400, code)
+
+		res, err := repoTest.ReadUser(user.Email)
+		require.NoError(t, err)
+		assert.Equal(t, res.Email, user.Email)
+	})
+
+	go t.Run("fail_wrong_id", func(t *testing.T) {
+		user, _ := createUser(t)
+		require.NotNil(t, user)
+
+		code, err := serviceTest.DeleteUser(0, user.Email)
+		require.Error(t, err)
+		assert.Equal(t, 400, code)
+
+		res, err := repoTest.ReadUser(user.Email)
+		require.NoError(t, err)
+		assert.Equal(t, res.Email, user.Email)
+	})
 }

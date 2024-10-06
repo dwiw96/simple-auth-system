@@ -9,6 +9,7 @@ import (
 
 	auth "github.com/dwiw96/simple-auth-system/features/auth"
 	middleware "github.com/dwiw96/simple-auth-system/middleware"
+	mail "github.com/dwiw96/simple-auth-system/utils/email"
 	password "github.com/dwiw96/simple-auth-system/utils/password"
 )
 
@@ -22,6 +23,12 @@ func NewAuthService(repo auth.RepositoryInterface, cache auth.CacheInterface) au
 		repo:  repo,
 		cache: cache,
 	}
+}
+
+func createLinkVerification(token string) (verifyUrl, unVerifyUrl string) {
+	verifyUrl = fmt.Sprintf("http://localhost:9090/fe/email/verification?token=%s", token[7:])
+	unVerifyUrl = fmt.Sprintf("http://localhost:9090/fe/email/unverification?token=%s", token[7:])
+	return
 }
 
 func (s *authService) SignUp(input auth.SignupRequest) (user *auth.User, code int, err error) {
@@ -61,7 +68,37 @@ func (s *authService) SignUp(input auth.SignupRequest) (user *auth.User, code in
 	}
 	user.MaritalStatus = maritalStatus.Status
 
+	code, err = s.SendEmailVerification(*user)
+	if err != nil {
+		return nil, code, err
+	}
+
 	return user, 0, nil
+}
+
+func (s *authService) SendEmailVerification(user auth.User) (code int, err error) {
+	key, err := s.repo.LoadKey()
+	if err != nil {
+		return 500, fmt.Errorf("load key error: %w", err)
+	}
+
+	token, err := middleware.CreateToken(user, 10, key)
+	if err != nil {
+		return 500, errors.New("failed generate authentication token")
+	}
+
+	verifyUrl, unVerifyUrl := createLinkVerification(token)
+	urlPlaceholder := map[string]interface{}{
+		"verify":   verifyUrl,
+		"unverify": unVerifyUrl,
+	}
+
+	err = mail.SendEmail(user.Email, "[Simple Auth System - Go]: Sign Up Verification", "assets/email_signup.html", urlPlaceholder)
+	if err != nil {
+		return 500, err
+	}
+
+	return
 }
 
 func (s *authService) LogIn(input auth.LoginRequest) (user *auth.User, token string, code int, err error) {
@@ -86,7 +123,7 @@ func (s *authService) LogIn(input auth.LoginRequest) (user *auth.User, token str
 		return nil, "", 500, fmt.Errorf("load key error: %w", err)
 	}
 
-	token, err = middleware.CreateToken(*user, key)
+	token, err = middleware.CreateToken(*user, 60, key)
 	if err != nil {
 		errMsg := errors.New("failed generate authentication token")
 		return nil, "", 500, errMsg
@@ -97,4 +134,22 @@ func (s *authService) LogIn(input auth.LoginRequest) (user *auth.User, token str
 
 func (s *authService) LogOut(payload auth.JwtPayload) error {
 	return s.cache.CachingBlockedToken(payload)
+}
+
+func (s *authService) EmailVerification(userID int64, email string) (code int, err error) {
+	err = s.repo.UpdateUserIsVerified(userID, email)
+	if err != nil {
+		return 400, err
+	}
+
+	return 0, err
+}
+
+func (s *authService) DeleteUser(userID int64, email string) (code int, err error) {
+	err = s.repo.DeleteUser(userID, email)
+	if err != nil {
+		return 400, err
+	}
+
+	return 0, nil
 }
