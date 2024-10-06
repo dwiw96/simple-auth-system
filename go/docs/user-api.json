@@ -1,13 +1,13 @@
 {
     "openapi": "3.0.3",
     "info": {
-        "title": "User API",
-        "description": "Simple User API",
+        "title": "Sumple Auth System",
+        "description": "Simple Auth System",
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://localhost:8000"
+            "url": "http://localhost:8080"
         }
     ],
     "paths": {
@@ -474,21 +474,209 @@
                                 "examples": {
                                     "Unauthorized":{
                                         "value": {
-                                        "description": "token is blacklist",
-                                        "error_message": "Unauthorized",
-                                        "execute_at": "2024/09/22 19:44:11.778",
-                                        "result": "failure"
+                                            "description": "token is blacklist",
+                                            "error_message": "Unauthorized",
+                                            "execute_at": "2024/09/22 19:44:11.778",
+                                            "result": "failure"
                                         }
                                     },
                                     "empty auth header": {
                                         "description": "empty auth header",
                                         "value": {
-                                                "description": [
-                                                    "no authorization header found"
-                                                ],
-                                                "error_message": "Unprocessable Entity",
-                                                "execute_at": "2024/09/22 19:44:11.778",
-                                                "result": "failure"
+                                            "description": [
+                                                "no authorization header found"
+                                            ],
+                                            "error_message": "Unprocessable Entity",
+                                            "execute_at": "2024/09/22 19:44:11.778",
+                                            "result": "failure"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/email/verification":{
+            "put": {
+                "description": "verification an email",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success verifying the email",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "error_message": {
+                                            "type": "string"
+                                        },
+                                        "execute_at": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "string"
+                                        },
+                                        "value":{
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "success": {
+                                            "description": "success",
+                                            "value": {
+                                                    "description": "Email is verified",
+                                                    "error_message": "",
+                                                    "execute_at": "2024/09/22 19:44:11.778",
+                                                    "result": "success",
+                                                    "value": ""
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401":{
+                        "description": "failed to verify the email",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "description": {
+                                            "type": "array"
+                                        },
+                                        "error_message": {
+                                            "type": "string"
+                                        },
+                                        "execute_at": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "Unauthorizes":{
+                                        "description": "expired token",
+                                        "value":{
+                                            "description": [
+                                                "failed to parse token when verifying, err: token has invalid claims: token is expired"
+                                            ],
+                                            "error_message": "Unauthorized",
+                                            "execute_at": "2024/10/06 17:25:21.993",
+                                            "result": "failure"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/email/unverification":{
+            "put": {
+                "description": "unverification an email",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200":{
+                        "description": "success delete user data",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "error_message": {
+                                            "type": "string"
+                                        },
+                                        "execute_at": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "string"
+                                        },
+                                        "value":{
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "success": {
+                                            "description": "success",
+                                            "value": {
+                                                    "description": "user data is deleted",
+                                                    "error_message": "",
+                                                    "execute_at": "2024/09/22 19:44:11.778",
+                                                    "result": "success",
+                                                    "value": ""
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401":{
+                        "description": "failed to delete user data",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "description": {
+                                            "type": "array"
+                                        },
+                                        "error_message": {
+                                            "type": "string"
+                                        },
+                                        "execute_at": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "examples": {
+                                    "Unauthorizes":{
+                                        "description": "expired token",
+                                        "value":{
+                                            "description": [
+                                                "failed to parse token when verifying, err: token has invalid claims: token is expired"
+                                            ],
+                                            "error_message": "Unauthorized",
+                                            "execute_at": "2024/10/06 17:25:21.993",
+                                            "result": "failure"
                                         }
                                     }
                                 }

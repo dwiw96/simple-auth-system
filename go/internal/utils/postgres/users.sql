@@ -19,6 +19,7 @@ CREATE TABLE users(
     hashed_password VARCHAR(255) NOT NULL
         CONSTRAINT ck_users_hashed_password_length CHECK (LENGTH(TRIM(hashed_password)) > 0),
         CONSTRAINT uq_users_hashed_password UNIQUE(hashed_password),
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
