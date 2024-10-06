@@ -28,7 +28,7 @@ var PayloadKey ContextKey = "payload"
 
 func AuthMiddleware(ctx context.Context, pool *pgxpool.Pool, client *redis.Client) gin.HandlerFunc {
 	return (func(c *gin.Context) {
-		if c.Request.RequestURI == "/api/signin" {
+		if c.Request.RequestURI == "/api/signup" {
 			c.Next()
 			return
 		}
@@ -72,12 +72,20 @@ func AuthMiddleware(ctx context.Context, pool *pgxpool.Pool, client *redis.Clien
 			return
 		}
 
-		err = CheckBlockedToken(client, ctx, payload.ID, payload.UserID)
+		err = CheckBlockedToken(client, ctx, payload.ID)
 		if err != nil {
 			response.ErrorJSON(c, 401, []string{err.Error()}, c.Request.RemoteAddr)
 			c.Abort()
 			return
 		}
+
+		err = PayloadVerification(ctx, pool, payload.Email, payload.Name)
+		if err != nil {
+			response.ErrorJSON(c, 401, []string{err.Error()}, c.Request.RemoteAddr)
+			c.Abort()
+			return
+		}
+
 		c.Set("payloadKey", payload)
 
 		c.Next()
@@ -94,9 +102,9 @@ func GetTokenHeader(r *http.Request) (token string, err error) {
 	return tokenString, nil
 }
 
-func CreateToken(reqData auth.User, key *rsa.PrivateKey) (token string, err error) {
+func CreateToken(reqData auth.User, minute int, key *rsa.PrivateKey) (token string, err error) {
 	nowTime := time.Now().UTC()
-	expTime := nowTime.Add(time.Minute * 60)
+	expTime := nowTime.Add(time.Minute * time.Duration(minute))
 
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -123,6 +131,10 @@ func CreateToken(reqData auth.User, key *rsa.PrivateKey) (token string, err erro
 
 func VerifyToken(authHeader string, key *rsa.PrivateKey) (bool, error) {
 	userToken := strings.Split(authHeader, " ")
+
+	if len(userToken) != 2 {
+		return false, fmt.Errorf("authorization header format is wrong, ether doesn't has bearer or token")
+	}
 
 	jwtToken, err := jwt.Parse(userToken[1], func(jwtToken *jwt.Token) (interface{}, error) {
 		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
@@ -217,8 +229,8 @@ func LoadKey(ctx context.Context, conn *pgxpool.Pool) (key *rsa.PrivateKey, err 
 	return nil, errors.New("no private key found in database")
 }
 
-func CheckBlockedToken(redis *redis.Client, ctx context.Context, tokenID uuid.UUID, userID int64) error {
-	check, err := redis.Exists(ctx, tokenID.String()).Result()
+func CheckBlockedToken(redis *redis.Client, ctx context.Context, tokenID uuid.UUID) error {
+	check, err := redis.Exists(ctx, "block "+tokenID.String()).Result()
 	if err != nil {
 		return err
 	}
@@ -227,4 +239,22 @@ func CheckBlockedToken(redis *redis.Client, ctx context.Context, tokenID uuid.UU
 	}
 
 	return nil
+}
+
+func PayloadVerification(ctx context.Context, pool *pgxpool.Pool, email, fullname string) error {
+	name := strings.Split(fullname, " ")
+
+	query := "SELECT COUNT(*) FROM users WHERE email = $1 AND first_name = $2 AND last_name = $3;"
+
+	var isOk int64
+	err := pool.QueryRow(ctx, query, email, name[0], name[len(name)-1]).Scan(&isOk)
+	if err != nil {
+		return fmt.Errorf("failed to verify token payload")
+	}
+
+	if isOk == 0 {
+		return fmt.Errorf("token payload is wrong, email, first name, and last name doesn't match")
+	}
+
+	return err
 }
