@@ -82,10 +82,9 @@ func TestCachingBlockedToken(t *testing.T) {
 		Gender:          generator.CreateRandomGender(),
 		MaritalStatusID: generator.CreateRandomMaritalStatusID(),
 	}
-	token, err := middleware.CreateToken(user, key)
+	token, err := middleware.CreateToken(user, 5, key)
 	require.NoError(t, err)
 	require.NotZero(t, len(token))
-	t.Log("TOKEN:", token)
 
 	payload, err := middleware.ReadToken(token, key)
 	require.NoError(t, err)
@@ -93,7 +92,8 @@ func TestCachingBlockedToken(t *testing.T) {
 	err = chacheTest.CachingBlockedToken(*payload)
 	require.NoError(t, err)
 
-	res, err := client.Get(ctx, fmt.Sprint(payload.ID)).Result()
+	res, err := client.Get(ctx, fmt.Sprint("block ", payload.ID)).Result()
+	fmt.Println(fmt.Sprint("block ", payload.ID))
 	require.NoError(t, err)
 	assert.Equal(t, fmt.Sprint(payload.UserID), res)
 }

@@ -315,3 +315,46 @@ func TestLoadKey(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, res)
 }
+
+func TestUpdateUserIsVerified(t *testing.T) {
+	for i := 0; i < 5; i++ {
+		user := createRandomUser(t)
+
+		t.Run("success", func(t *testing.T) {
+			err := repoTest.UpdateUserIsVerified(user.ID, user.Email)
+			require.NoError(t, err)
+		})
+	}
+
+	t.Run("fail", func(t *testing.T) {
+		user := createRandomUser(t)
+
+		err := repoTest.UpdateUserIsVerified(user.ID, "a"+user.Email)
+		require.Error(t, err)
+	})
+}
+
+func TestDeleteUser(t *testing.T) {
+	for i := 0; i < 5; i++ {
+		user := createRandomUser(t)
+
+		t.Run("success", func(t *testing.T) {
+			err := repoTest.DeleteUser(user.ID, user.Email)
+			require.NoError(t, err)
+		})
+	}
+
+	t.Run("fail_wrong_email", func(t *testing.T) {
+		user := createRandomUser(t)
+
+		err := repoTest.UpdateUserIsVerified(user.ID, "a"+user.Email)
+		require.Error(t, err)
+	})
+
+	t.Run("fail_wrong_id", func(t *testing.T) {
+		user := createRandomUser(t)
+
+		err := repoTest.UpdateUserIsVerified(0, user.Email)
+		require.Error(t, err)
+	})
+}
