@@ -1,30 +1,42 @@
-pgRun:
+pg-run:
 	sudo docker compose -f ./utils/driver/postgresql/docker-compose-pg.yml up -d
-pgStart:
+pg-start:
 	sudo docker container start pg_auth_system_container
-pgExec:
+pg-exec:
 	sudo docker exec -it pg_auth_system_container psql -U dwiw auth_system_go
-pgStop:
+pg-stop:
 	sudo docker container stop pg_auth_system_container
 
-rdRun:
+rd-run:
 	sudo docker run --name rd_auth_system -p 6379:6379 -d redis
-rdStart:
+rd-start:
 	sudo docker container start rd_auth_system
-rdExec:
+rd-exec:
 	sudo docker exec -it rd_auth_system redis-cli -h localhost
-rdStop:
+rd-stop:
 	sudo docker container stop rd_auth_system
 
-pgMigrateAll:
+pg-exec-table-all:
 	sudo docker exec -i pg_auth_system_container psql -U dwiw auth_system_go < internal/utils/postgres/all_tables.sql
-pgMigrateUsers:
+pg-exec-table-users:
 	sudo docker exec -i pg_auth_system_container psql -U dwiw auth_system_go < internal/utils/postgres/users.sql
-pgMigrateEmail:
+pg-exec-table-email:
 	sudo docker exec -i pg_auth_system_container psql -U dwiw auth_system_go < internal/utils/postgres/emails.sql
-pgMigrateDrop:
+pg-exec-table-drop:
 	sudo docker exec -i pg_auth_system_container psql -U dwiw auth_system_go < internal/utils/postgres/drop_all_tables.sql
-pgMigratePrivKey:
+pg-exec-table-privKey:
 	sudo docker exec -i pg_auth_system_container psql -U dwiw auth_system_go < internal/utils/postgres/priv_key.sql
-pgInsertMaritalStatus:
+pg-exec-insert-marital-status:
 	sudo docker exec -i pg_auth_system_container psql -U dwiw auth_system_go < internal/utils/postgres/insert_marital_status.sql
+
+migrate-create:
+	migrate create -ext sql -dir internal/database/migrations -seq init
+migrate-up:
+	migrate -path internal/database/migrations -database "postgresql://dwiw:secret@localhost:5432/auth_system_go?sslmode=disable" -verbose up $(v)
+migrate-down:
+	migrate -path internal/database/migrations -database "postgresql://dwiw:secret@localhost:5432/auth_system_go?sslmode=disable" -verbose down $(v)
+migrate-force:
+	migrate -path internal/database/migrations -database "postgresql://dwiw:secret@localhost:5432/auth_system_go?sslmode=disable" force $(v)
+
+print:
+	echo "Hi $(name)"
