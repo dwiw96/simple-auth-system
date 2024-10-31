@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	pg "github.com/dwiw96/simple-auth-system/utils/driver/postgresql"
 	generator "github.com/dwiw96/simple-auth-system/utils/generator"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -357,4 +359,194 @@ func TestDeleteUser(t *testing.T) {
 		err := repoTest.UpdateUserIsVerified(0, user.Email)
 		require.Error(t, err)
 	})
+}
+
+func TestReadRefreshToken(t *testing.T) {
+	tests := []struct {
+		name  string
+		user  auth.User
+		token uuid.UUID
+		err   bool
+	}{
+		{
+			name:  "succes_1",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "succes_2",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "succes_3",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "error_wrong_id",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   true,
+		}, {
+			name:  "error_duplicate_uuid",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   true,
+		},
+	}
+
+	go func() {
+		wg := sync.WaitGroup{}
+		for _, test := range tests {
+			wg.Add(1)
+			go t.Run(test.name, func(t *testing.T) {
+				err := repoTest.InsertRefreshToken(test.user.ID, test.token)
+				require.NoError(t, err)
+				if !test.err {
+					res, err := repoTest.ReadRefreshToken(test.user.ID, test.token)
+					require.NoError(t, err)
+					assert.NotNil(t, res)
+					assert.Equal(t, test.user.ID, res.UserID)
+					assert.Equal(t, test.token, res.RefreshToken)
+				}
+				if test.name == "error_wrong_id" {
+					res, err := repoTest.ReadRefreshToken(0, test.token)
+					require.Error(t, err)
+					require.Nil(t, res)
+				}
+				if test.name == "error_wrong_uuid" {
+					res, err := repoTest.ReadRefreshToken(test.user.ID, uuid.New())
+					require.Error(t, err)
+					require.Nil(t, res)
+				}
+				wg.Done()
+			})
+		}
+		wg.Wait()
+	}()
+}
+
+func TestInsertRefreshToken(t *testing.T) {
+	tests := []struct {
+		name  string
+		user  auth.User
+		token uuid.UUID
+		err   bool
+	}{
+		{
+			name:  "succes_1",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "succes_2",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "succes_3",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "error_wrong_id",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   true,
+		}, {
+			name:  "error_duplicate_uuid",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   true,
+		},
+	}
+
+	go func() {
+		wg := sync.WaitGroup{}
+		for _, test := range tests {
+			wg.Add(1)
+			go t.Run(test.name, func(t *testing.T) {
+				if !test.err {
+					err := repoTest.InsertRefreshToken(test.user.ID, test.token)
+					require.NoError(t, err)
+				}
+				if test.name == "error_wrong_id" {
+					err := repoTest.InsertRefreshToken(0, test.token)
+					require.Error(t, err)
+				}
+				if test.name == "error_duplicate_uuid" {
+					err := repoTest.InsertRefreshToken(test.user.ID, test.token)
+					require.NoError(t, err)
+					err = repoTest.InsertRefreshToken(test.user.ID, test.token)
+					require.Error(t, err)
+				}
+				wg.Done()
+			})
+		}
+		wg.Wait()
+	}()
+}
+
+func TestDeleteRefreshToken(t *testing.T) {
+	tests := []struct {
+		name  string
+		user  auth.User
+		token uuid.UUID
+		err   bool
+	}{
+		{
+			name:  "succes_1",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "succes_2",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "succes_3",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   false,
+		}, {
+			name:  "error_wrong_id",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   true,
+		}, {
+			name:  "error_empty_uuid",
+			user:  createRandomUser(t),
+			token: uuid.New(),
+			err:   true,
+		},
+	}
+
+	go func() {
+		wg := sync.WaitGroup{}
+		for _, test := range tests {
+			wg.Add(1)
+			go t.Run(test.name, func(t *testing.T) {
+				err := repoTest.InsertRefreshToken(test.user.ID, test.token)
+				require.NoError(t, err)
+				if !test.err {
+					err := repoTest.DeleteRefreshToken(test.user.ID)
+					require.NoError(t, err)
+				}
+				if test.name == "error_wrong_id" {
+					err := repoTest.DeleteRefreshToken(0)
+					require.Error(t, err)
+				}
+				if test.name == "error_empty_uuid" {
+					err := repoTest.DeleteRefreshToken(test.user.ID)
+					require.NoError(t, err)
+					err = repoTest.DeleteRefreshToken(test.user.ID)
+					require.Error(t, err)
+				}
+				wg.Done()
+			})
+		}
+		wg.Wait()
+	}()
 }

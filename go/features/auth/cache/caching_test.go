@@ -2,6 +2,7 @@ package chache
 
 import (
 	"context"
+	"crypto/rsa"
 	"fmt"
 	"log"
 	"os"
@@ -23,10 +24,11 @@ import (
 )
 
 var (
-	chacheTest auth.CacheInterface
-	pool       *pgxpool.Pool
-	client     *redis.Client
-	ctx        context.Context
+	cacheTest auth.CacheInterface
+	pool      *pgxpool.Pool
+	client    *redis.Client
+	ctx       context.Context
+	key       *rsa.PrivateKey
 )
 
 func TestMain(m *testing.M) {
@@ -64,13 +66,14 @@ func TestMain(m *testing.M) {
 	ctx, cancel = context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	chacheTest = NewAuthCache(client, ctx)
+	cacheTest = NewAuthCache(client, ctx)
 
 	os.Exit(m.Run())
 }
 
-func TestCachingBlockedToken(t *testing.T) {
-	key, err := middleware.LoadKey(ctx, pool)
+func createToken(t *testing.T) (payload *auth.JwtPayload) {
+	var err error
+	key, err = middleware.LoadKey(ctx, pool)
 	require.NoError(t, err)
 	require.NotNil(t, key)
 
@@ -86,14 +89,86 @@ func TestCachingBlockedToken(t *testing.T) {
 	require.NoError(t, err)
 	require.NotZero(t, len(token))
 
-	payload, err := middleware.ReadToken(token, key)
+	payload, err = middleware.ReadToken(token, key)
 	require.NoError(t, err)
 
-	err = chacheTest.CachingBlockedToken(*payload)
-	require.NoError(t, err)
+	return
+}
 
-	res, err := client.Get(ctx, fmt.Sprint("block ", payload.ID)).Result()
-	fmt.Println(fmt.Sprint("block ", payload.ID))
-	require.NoError(t, err)
-	assert.Equal(t, fmt.Sprint(payload.UserID), res)
+func TestCachingBlockedToken(t *testing.T) {
+	var err error
+	tests := []struct {
+		name    string
+		payload *auth.JwtPayload
+		err     bool
+	}{
+		{
+			name:    "success",
+			payload: createToken(t),
+			err:     false,
+		}, {
+			name:    "success",
+			payload: createToken(t),
+			err:     false,
+		}, {
+			name:    "failed_duration_minus",
+			payload: createToken(t),
+			err:     true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if !test.err {
+				err = cacheTest.CachingBlockedToken(*test.payload)
+				require.NoError(t, err)
+
+				res, err := client.Get(ctx, fmt.Sprint("block ", test.payload.ID)).Result()
+				require.NoError(t, err)
+				assert.Equal(t, fmt.Sprint(test.payload.UserID), res)
+			} else {
+				now := time.Now().UTC().Add(1)
+				test.payload.Exp = now.Unix()
+				err = cacheTest.CachingBlockedToken(*test.payload)
+				require.NoError(t, err)
+
+				res, err := client.Get(ctx, fmt.Sprint("block ", test.payload.ID)).Result()
+				require.Error(t, err)
+				assert.Empty(t, res)
+			}
+		})
+	}
+}
+
+func TestCheckBlockedToken(t *testing.T) {
+	var err error
+
+	tests := []struct {
+		name    string
+		payload *auth.JwtPayload
+		err     bool
+	}{
+		{
+			name:    "valid",
+			payload: createToken(t),
+			err:     false,
+		}, {
+			name:    "blacklist",
+			payload: createToken(t),
+			err:     true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			t.Log("id:", test.payload.ID)
+			if !test.err {
+				err = cacheTest.CheckBlockedToken(*test.payload)
+			} else {
+				err = cacheTest.CachingBlockedToken(*test.payload)
+				require.NoError(t, err)
+
+				err = cacheTest.CheckBlockedToken(*test.payload)
+				require.Error(t, err)
+			}
+		})
+	}
 }

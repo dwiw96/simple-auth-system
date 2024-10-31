@@ -1,3 +1,13 @@
+BEGIN;
+
+CREATE TABLE marital_status(
+    id INT GENERATED ALWAYS AS IDENTITY
+        CONSTRAINT pk_marital_status_id PRIMARY KEY,
+    status VARCHAR(20) NOT NULL
+        CONSTRAINT ck_marital_status_status CHECK (LENGTH(TRIM(status)) > 0),
+        CONSTRAINT uq_marital_status_status UNIQUE(status)
+);
+
 CREATE TABLE users(
     id INT GENERATED ALWAYS AS IDENTITY
         CONSTRAINT pk_users_id PRIMARY KEY,
@@ -19,7 +29,6 @@ CREATE TABLE users(
     hashed_password VARCHAR(255) NOT NULL
         CONSTRAINT ck_users_hashed_password_length CHECK (LENGTH(TRIM(hashed_password)) > 0),
         CONSTRAINT uq_users_hashed_password UNIQUE(hashed_password),
-    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -31,10 +40,11 @@ CREATE INDEX ix_users_address ON users(address);
 CREATE INDEX ix_users_gender ON users(gender);
 CREATE INDEX ix_users_created_at ON users(created_at);
 
-CREATE TABLE marital_status(
-    id INT GENERATED ALWAYS AS IDENTITY
-        CONSTRAINT pk_marital_status_id PRIMARY KEY,
-    status VARCHAR(20) NOT NULL
-        CONSTRAINT ck_marital_status_status CHECK (LENGTH(TRIM(status)) > 0),
-        CONSTRAINT uq_marital_status_status UNIQUE(status)
-);
+INSERT INTO 
+    marital_status(status)
+VALUES
+    ('single'), 
+    ('married'), 
+    ('divorced');
+
+COMMIT;

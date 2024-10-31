@@ -1,0 +1,21 @@
+@startuml /api/signup
+Actor user as u
+Participant frontend as fe
+Participant backend as be
+Database postgresql as pg #mediumblue
+Participant email as m
+
+u  -> fe ++ #Gold : form data
+activate u #Gold
+deactivate u
+fe -> be --++ #Gold : requestbody
+be -> be : validate request body
+be -> pg ++ #Gold : insert user data
+deactivate pg
+be -> pg ++ #Gold : read private key
+pg --> be -- : send private key
+be -> be : create token
+be -> m --++ #Gold : send request
+m --> u --++ #Gold : send email verification
+deactivate u
+@enduml

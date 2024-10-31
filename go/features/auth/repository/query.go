@@ -9,6 +9,7 @@ import (
 
 	auth "github.com/dwiw96/simple-auth-system/features/auth"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -174,4 +175,81 @@ func (r *authRepository) DeleteUser(id int64, email string) (err error) {
 	}
 
 	return
+}
+
+func (r *authRepository) ReadRefreshToken(userID int64, refreshToken uuid.UUID) (res *auth.RefreshTokenWhitelist, err error) {
+	query := "SELECT * FROM refresh_token_whitelist WHERE user_id = $1 AND refresh_token = $2;"
+
+	var result auth.RefreshTokenWhitelist
+	err = r.pool.QueryRow(r.ctx, query, userID, refreshToken).Scan(&result.ID, &result.UserID, &result.RefreshToken, &result.ExpiresAt, &result.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read refresh token, err: %v", err)
+	}
+
+	return &result, nil
+}
+
+func (r *authRepository) InsertRefreshToken(userID int64, refreshToken uuid.UUID) (err error) {
+	query := "INSERT INTO refresh_token_whitelist(user_id, refresh_token, expires_at) VALUES($1, $2, NOW() + INTERVAL '5 minute')"
+
+	res, err := r.pool.Exec(r.ctx, query, userID, refreshToken)
+	if err != nil {
+		return fmt.Errorf("failed to insert refresh token, err: %v", err)
+	}
+
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("there are no rows affrected when insert refresh token")
+	}
+
+	return nil
+}
+
+func (r *authRepository) DeleteRefreshToken(userID int64) (err error) {
+	query := "DELETE FROM refresh_token_whitelist WHERE user_id = $1;"
+
+	res, err := r.pool.Exec(r.ctx, query, userID)
+	if err != nil {
+		return fmt.Errorf("failed to insert refresh token, err: %v", err)
+	}
+
+	if res.RowsAffected() == 0 {
+		return fmt.Errorf("there are no rows affrected when delete refresh token")
+	}
+
+	return nil
+}
+
+func (r *authRepository) ExecDbTx(fn func(*authRepository) error) error {
+	tx, err := r.pool.Begin(r.ctx)
+	if err != nil {
+		return fmt.Errorf("failed to start db transaction, err: %v", err)
+	}
+
+	err = fn(r)
+	if err != nil {
+		if rbErr := tx.Rollback(r.ctx); rbErr != nil {
+			return fmt.Errorf("failed to rollback, err = %v", rbErr)
+		}
+		return fmt.Errorf("failed db transaction, err: %v", err)
+	}
+
+	return tx.Commit(r.ctx)
+}
+
+func (r *authRepository) UpdateRefreshToken(userID int64, refreshToken uuid.UUID) (err error) {
+	r.ExecDbTx(func(ar *authRepository) error {
+		err = ar.DeleteRefreshToken(userID)
+		if err != nil {
+			return err
+		}
+
+		err = ar.InsertRefreshToken(userID, refreshToken)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return nil
 }
