@@ -253,14 +253,6 @@
                 "responses": {
                     "200":{
                         "description": "Success login",
-                        "headers": {
-                            "Authorization":{
-                                "description": "bearer token",
-                                "schema":{
-                                    "type": "string"
-                                }
-                            }
-                        },
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -295,6 +287,12 @@
                                                 },
                                                 "married_status":{
                                                     "type": "string"
+                                                },
+                                                "access_token":{
+                                                    "type": "string"
+                                                },
+                                                "refresh_token":{
+                                                    "type": "string"
                                                 }
                                             }
                                         }
@@ -313,7 +311,9 @@
                                                 "email": "doe@mail.com",
                                                 "address": "Circle Street, No.1, Bandung, West Java",
                                                 "gender": "male",
-                                                "marital_status": "single"
+                                                "marital_status": "single",
+                                                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                                                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                                             }
                                         }
                                     }
@@ -676,6 +676,131 @@
                                             ],
                                             "error_message": "Unauthorized",
                                             "execute_at": "2024/10/06 17:25:21.993",
+                                            "result": "failure"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh_token":{
+            "post": {
+                "description": "renew refresh token",
+                "requestBody": {
+                    "content": {
+                        "application/json":{
+                            "schema":{
+                                "type": "object",
+                                "properties": {
+                                    "data":{
+                                        "type": "object",
+                                        "properties": {
+                                            "access_token":{
+                                                "type": "string"
+                                            },
+                                            "refresh_token":{
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "example":{
+                                "valid":{
+                                    "description": "valid request body",
+                                    "value": {
+                                        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJlMDcy...",
+                                        "refresh_token": "4c489afa-485f-43f3-b5bc-23dd95b5a17a"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200":{
+                        "description": "success renew refresh and access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "error_message": {
+                                            "type": "string"
+                                        },
+                                        "execute_at": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "string"
+                                        },
+                                        "value": {
+                                            "type": "object",
+                                            "properties": {
+                                                "access_token":{
+                                                    "type": "string"
+                                                },
+                                                "refresh_token":{
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "example":{
+                                    "success": {
+                                        "description": "success renew refresh and access token",
+                                        "value": {
+                                            "description": "refresh token success",
+                                            "error_message": "",
+                                            "execute_at": "2024/10/30 22:46:04.684",
+                                            "result": "success",
+                                            "value": {
+                                                "refresh_token": "4d1aeb5b-24a9-4dc9-bb39-c796e4d73e78",
+                                                "access_token": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjlkODhkM2E0LTE5ZjAtNGMwNS1hODA0LWZiMmNmMDhlNWI5ZSIsInVzZXJfaWQiOjQyLCJpc3MiOiIiLCJuYW1lIjoiRHdpIFdhaHl1ZGkiLCJlbWFpbCI6ImR3aXdhaHl1ZGkxOTk2QGdtYWlsLmNvbSIsImFkZHJlc3MiOiJDaXJjbGUgU3RyZWV0LCBOby4xLCBCYW5kdW5nLCBXZXN0IEphdmEiLCJpYXQiOjE3MzAyOTU5NjQsImV4cCI6MTczMDI5NjI2NH0.GnmjRsP-rTuUnWZEXyEfJr8l62Uw5JxyuzOFp7ypfj8d4Tnl9VY4JU-d5AywwfSV8CdapK_xyT1pvR-ZgPZaAbMRP4t9P2zU3LWxJD03gE2nFIoHlH7zjeuxyV4fXXzt_u5tKiTkBuZRxEVNa43t-RE3SSfMqjW9sUrZUp3MYuuW2edeTTb_gg89T5Tg5zgaZn0h9HCNreWEXUlFNCYPEB3jymvsOZcO99pmrJpyCbCIvHhVXmGUBI_yekCjxLQ61GXNkg3Vw5o1VBuRmyd_o6IqvAOaOdlC3YFs9xV6YV8b8AiaTCJunO7tl4dUcz2bgyQEfWV3Sw6NECSjweppyw"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401":{
+                        "description": "invalid refresh token",
+                        "content": {
+                            "application/json":{
+                                "schema":{
+                                    "type": "object",
+                                    "properties": {
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "error_message": {
+                                            "type": "string"
+                                        },
+                                        "execute_at": {
+                                            "type": "string"
+                                        },
+                                        "result": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example":{
+                                    "unauthorized": {
+                                        "description": "invalid refresh token",
+                                        "value": {
+                                            "description": [
+                                                "invalid refresh token, msg: failed to read refresh token, err: no rows in result set"
+                                            ],
+                                            "error_message": "Bad Request",
+                                            "execute_at": "2024/10/30 22:47:38.331",
                                             "result": "failure"
                                         }
                                     }

@@ -1,0 +1,24 @@
+@startuml /api/auth/refresh_token
+Participant frontend as fe
+Participant backend as be
+Database postgresql as pg #MediumBlue
+Database redis as rd #Red
+
+fe -> be ++ #Gold : send refresh & access token
+activate fe #Gold
+deactivate fe
+be -> pg ++ #Gold : read private key
+pg --> be -- : send private key
+be -> be : verify token
+opt if access token exp >= 0
+    be -> rd ++ #Gold : caching access token
+    deactivate rd
+end
+be -> be : create new refresh and access token
+be -> pg ++ #Gold : delete old refresh token
+deactivate pg
+be -> pg ++ #Gold : insert new refresh token
+deactivate pg
+be --> fe --++ #Gold : send response (new refresh & access token)
+deactivate fe
+@enduml

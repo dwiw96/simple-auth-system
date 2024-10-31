@@ -1,0 +1,727 @@
+{
+	"info": {
+		"_postman_id": "3997d86c-9c05-4834-8244-804f8940d244",
+		"name": "simple-auth-system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24088817"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Dwi\",\n    \"middle_name\": \"\",\n    \"last_name\": \"Wahyudi\",\n    \"email\": \"dwiwahyudi1996@gmail.com\",\n    \"address\": \"Circle Street, No.1, Bandung, West Java\",\n    \"gender\": \"male\",\n    \"marital_status\": \"single\",\n    \"password\": \"secret333\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"signup"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"Dwi\",\n    \"middle_name\": \"\",\n    \"last_name\": \"Wahyudi\",\n    \"email\": \"dwiwahyudi1996@gmail.com\",\n    \"address\": \"Circle Street, No.1, Bandung, West Java\",\n    \"gender\": \"male\",\n    \"marital_status\": \"single\",\n    \"password\": \"secret333\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/signup",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"signup"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:32:48 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "360"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": \"Sign up success\",\n    \"error_message\": \"\",\n    \"execute_at\": \"2024/10/06 17:32:48.333\",\n    \"result\": \"success\",\n    \"value\": {\n        \"fullname\": \"Dwi Wahyudi\",\n        \"email\": \"dwiwahyudi1996@gmail.com\",\n        \"address\": \"Circle Street, No.1, Bandung, West Java\",\n        \"gender\": \"male\",\n        \"marital_status\": \"single\"\n    }\n}"
+						},
+						{
+							"name": "Unprocessable Entity",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"\",\n    \"middle_name\": \"\",\n    \"last_name\": \"Wahyudi\",\n    \"email\": \"dwiwahyudi1996@gmail.com\",\n    \"address\": \"Circle Street, No.1, Bandung, West Java\",\n    \"gender\": \"male\",\n    \"marital_status\": \"singlel\",\n    \"password\": \"secret\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/signup",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"signup"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:39:41 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "311"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"FirstName is a required field\",\n        \"MaritalStatus must be one of [single married divorced]\",\n        \"Password must be at least 7 characters in length\"\n    ],\n    \"error_message\": \"Unprocessable Entity\",\n    \"execute_at\": \"2024/10/06 17:39:41.408\",\n    \"result\": \"failure\"\n}"
+						},
+						{
+							"name": "Conflict",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"Dwi\",\n    \"middle_name\": \"\",\n    \"last_name\": \"Wahyudi\",\n    \"email\": \"dwiwahyudi1996@gmail.com\",\n    \"address\": \"Circle Street, No.1, Bandung, West Java\",\n    \"gender\": \"male\",\n    \"marital_status\": \"single\",\n    \"password\": \"secret333\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/signup",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"signup"
+									]
+								}
+							},
+							"status": "Conflict",
+							"code": 409,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:41:28 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "163"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"email is registered\"\n    ],\n    \"error_message\": \"Conflict\",\n    \"execute_at\": \"2024/10/06 17:41:28.534\",\n    \"result\": \"failure\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Log In",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"dwiwahyudi1996@gmail.com\",\n    \"password\": \"secret333\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"dwiwahyudi1996@gmail.com\",\n    \"password\": \"secret333\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Authorization",
+									"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMxOTA4MmU4LTRmODAtNGJlNi05NTExLWRjY2MwNDJjZDVmMiIsInVzZXJfaWQiOjEyNywiaXNzIjoiIiwibmFtZSI6IkR3aSBXYWh5dWRpIiwiZW1haWwiOiJkd2l3YWh5dWRpMTk5NkBnbWFpbC5jb20iLCJhZGRyZXNzIjoiQ2lyY2xlIFN0cmVldCwgTm8uMSwgQmFuZHVuZywgV2VzdCBKYXZhIiwiaWF0IjoxNzI4MjA0NjY3LCJleHAiOjE3MjgyMDgyNjd9.TgGXcydn22uJq0376Xt6zGDb-zmM3s9YELt7AD-ty_LX0XCtyVJV2MSaiZ3FCDeI2_uaJdfNx_Bzeczr4CMPBTj8VOmQj_riQ8W8iYzmY-R8_ksjtUoYzsxhjiiLJ8AF7Pj3g1JYvPumLmuZ6Rr-86tbubhZ003rr8lOwL-NqzYgM-YdvTZ0_7EWD654TvHGbM4z7qh7pkHLwsq5qb5Q_ZkVvzK06ud7DsXl39cuLVlbZbRy6R8rZTESMDLYzsTwfv5Jz0vJ0AMyk3ADrbI_XlgYvyYPvGrsqxRzof6V2atjHF65zIdtsWylGz6pvXDGPYYyP4UQvMUvh8xwc8cgCA"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:51:07 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "358"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": \"Login success\",\n    \"error_message\": \"\",\n    \"execute_at\": \"2024/10/06 17:51:07.102\",\n    \"result\": \"success\",\n    \"value\": {\n        \"fullname\": \"Dwi Wahyudi\",\n        \"email\": \"dwiwahyudi1996@gmail.com\",\n        \"address\": \"Circle Street, No.1, Bandung, West Java\",\n        \"gender\": \"male\",\n        \"marital_status\": \"single\"\n    }\n}"
+						},
+						{
+							"name": "Unauthorized",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"dwiwahyudi1996@gmail.com\",\n    \"password\": \"secret332\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"login"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:41:01 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "165"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"password is wrong\"\n    ],\n    \"error_message\": \"Unauthorized\",\n    \"execute_at\": \"2024/10/06 17:41:01.442\",\n    \"result\": \"failure\"\n}"
+						},
+						{
+							"name": "Unprocessable Entity",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"\",\n    \"password\": \"secret333\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"login"
+									]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:42:40 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "181"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"Email is a required field\"\n    ],\n    \"error_message\": \"Unprocessable Entity\",\n    \"execute_at\": \"2024/10/06 17:42:40.123\",\n    \"result\": \"failure\"\n}"
+						},
+						{
+							"name": "Wrong Email",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"dwiwahyudi199@gmail.com\",\n    \"password\": \"secret333\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"login"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:50:35 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "201"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"no user found with this email dwiwahyudi199@gmail.com\"\n    ],\n    \"error_message\": \"Unauthorized\",\n    \"execute_at\": \"2024/10/06 17:50:35.920\",\n    \"result\": \"failure\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Log Out",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImMxOTA4MmU4LTRmODAtNGJlNi05NTExLWRjY2MwNDJjZDVmMiIsInVzZXJfaWQiOjEyNywiaXNzIjoiIiwibmFtZSI6IkR3aSBXYWh5dWRpIiwiZW1haWwiOiJkd2l3YWh5dWRpMTk5NkBnbWFpbC5jb20iLCJhZGRyZXNzIjoiQ2lyY2xlIFN0cmVldCwgTm8uMSwgQmFuZHVuZywgV2VzdCBKYXZhIiwiaWF0IjoxNzI4MjA0NjY3LCJleHAiOjE3MjgyMDgyNjd9.TgGXcydn22uJq0376Xt6zGDb-zmM3s9YELt7AD-ty_LX0XCtyVJV2MSaiZ3FCDeI2_uaJdfNx_Bzeczr4CMPBTj8VOmQj_riQ8W8iYzmY-R8_ksjtUoYzsxhjiiLJ8AF7Pj3g1JYvPumLmuZ6Rr-86tbubhZ003rr8lOwL-NqzYgM-YdvTZ0_7EWD654TvHGbM4z7qh7pkHLwsq5qb5Q_ZkVvzK06ud7DsXl39cuLVlbZbRy6R8rZTESMDLYzsTwfv5Jz0vJ0AMyk3ADrbI_XlgYvyYPvGrsqxRzof6V2atjHF65zIdtsWylGz6pvXDGPYYyP4UQvMUvh8xwc8cgCA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/logout",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"logout"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:51:58 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "16"
+								}
+							],
+							"cookie": [],
+							"body": "\"logout success\""
+						},
+						{
+							"name": "Unauthorized",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/logout",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"logout"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:51:40 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "233"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"failed to parse token when verifying, err: token has invalid claims: token is expired\"\n    ],\n    \"error_message\": \"Unauthorized\",\n    \"execute_at\": \"2024/10/06 17:51:40.331\",\n    \"result\": \"failure\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Email Verification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYxODc4YWQwLWFhZGItNDljNS1iNTY0LWY0ZmU2M2Q1M2FmMSIsInVzZXJfaWQiOjQxLCJpc3MiOiIiLCJuYW1lIjoiRHdpIFdhaHl1ZGkiLCJlbWFpbCI6ImR3aXdhaHl1ZGkxOTk2QGdtYWlsLmNvbSIsImFkZHJlc3MiOiJDaXJjbGUgU3RyZWV0LCBOby4xLCBCYW5kdW5nLCBXZXN0IEphdmEiLCJpYXQiOjE3MzAxMTc0MTcsImV4cCI6MTczMDExODAxN30.cKFVas2JJotkVCbgHrCqhoSadgLn9mE-7AOhoFFhmVq41R3e_a_V1ytx6V6BHGUi8B-4AXnX5i2yhnpu0TOdk8yT9asgNfG-X6M2q7UgZsuaKjC1c1VkuuqWYzFquE8jL3IdvqSlPnnRLyeqkfCZvmhP_Q5IanLIHBlyAgBTsvREiZcEonC5rqFhFpyKgV5XsSz4ASMZNC6xeHLhSaMT7b3_KkYBG-U5nBbM1MXoeJoTD4AH_XLrTmv6sbsPTct2Tc8VYSsnBEenVwL5Ktn-5TLj33PqHifFyy9Q6HSv9vgwTAIpJD9WpgPryQamB7pfhyskTw06NhNEP-byBgJ2sQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/email/verification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"email",
+								"verification"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Expired Token",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/email/verification",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"email",
+										"verification"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 10:23:31 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "233"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"failed to parse token when verifying, err: token has invalid claims: token is expired\"\n    ],\n    \"error_message\": \"Unauthorized\",\n    \"execute_at\": \"2024/10/06 19:23:31.627\",\n    \"result\": \"failure\"\n}"
+						},
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/email/verification",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"email",
+										"verification"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 10:24:54 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "154"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": \"email is verified\",\n    \"error_message\": \"\",\n    \"execute_at\": \"2024/10/06 19:24:54.607\",\n    \"result\": \"success\",\n    \"value\": \"\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Email Unverification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE2ZmNiZmY0LTE0NTktNDRkNi1iZTQ3LTk1MjA3YmFhMGMwYiIsInVzZXJfaWQiOjEyNiwiaXNzIjoiIiwibmFtZSI6IkR3aSBXYWh5dWRpIiwiZW1haWwiOiJkd2l3YWh5dWRpMTk5NkBnbWFpbC5jb20iLCJhZGRyZXNzIjoiQ2lyY2xlIFN0cmVldCwgTm8uMSwgQmFuZHVuZywgV2VzdCBKYXZhIiwiaWF0IjoxNzI4MjAzNTYwLCJleHAiOjE3MjgyMDQxNjB9.QZ7cRJIFSoPODvzS0lPQAYW_WzrS-XPYlXYVG7JiQxG_aHF2I6nQY3QmBr_mfJEYu7EX1VoPX8GZyPOs346n3Dwim08oXwOJu3m4RkF40r32ExskW6iFZvO7dQYtxcNB1KtCK6tkoXhxPQ8hABbSQY5O062GEgJon2kKO4j-NJVugoPgTBUE1pe8qgQEQg2-IphiNQKR5_xvYjOLGYNGs2xwbcGTV_tAI9xpMfqoEW7kWJSehKoXaVuCkGd0Urb_MnXLL0hT7GHpzY6J-HPOEb2JfuF_knr8qvZFgbwc4I907sEZIabT1rwhuV2_1rJHnxfNQMhK1KPGhzzUXGFQdA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/email/unverification",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"email",
+								"unverification"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/email/unverification",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"email",
+										"unverification"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:33:54 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "165"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": \"user is unverify and deleted\",\n    \"error_message\": \"\",\n    \"execute_at\": \"2024/10/06 17:33:54.153\",\n    \"result\": \"success\",\n    \"value\": \"\"\n}"
+						},
+						{
+							"name": "Unauthorized",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/email/unverification",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"email",
+										"unverification"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 06 Oct 2024 08:34:55 GMT"
+								},
+								{
+									"key": "Content-Length",
+									"value": "233"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"description\": [\n        \"failed to parse token when verifying, err: token has invalid claims: token is expired\"\n    ],\n    \"error_message\": \"Unauthorized\",\n    \"execute_at\": \"2024/10/06 17:34:55.316\",\n    \"result\": \"failure\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"access_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZTlhMzdlLTRiZjAtNDZmYi1hNTgwLWIxODE4YWQ3NzljNCIsInVzZXJfaWQiOjQxLCJpc3MiOiIiLCJuYW1lIjoiRHdpIFdhaHl1ZGkiLCJlbWFpbCI6ImR3aXdhaHl1ZGkxOTk2QGdtYWlsLmNvbSIsImFkZHJlc3MiOiJDaXJjbGUgU3RyZWV0LCBOby4xLCBCYW5kdW5nLCBXZXN0IEphdmEiLCJpYXQiOjE3MzAxNjczMDAsImV4cCI6MTczMDE2NzYwMH0.DFuHfzO_pm2GkjvREZ1uaJBAMZ5BvOIpuSMx2Gc5Snr4ltmFRxQpxWNRTdzkQ74HknKTmg2AdmwhYNTa_z05RkxlZfhxTEuOV8qpPOuLGftPSejPuOu5mM51BSozEKzpniSix5zSj_0suuc4Mc2B11VHnwKSXBP65tVdrWLr-DW3noNQSkA-lI4-RrFx2eEqhuq-dGazfP0-BC_oFfHv3gDVYZjL0ib_gHGcjhkw_P9u06-kmbr_dcJZX-SL-GRe7n_lMqDhyKDZapXn6dFlc0cLqsembYMohRGtr3cAZo36js9GZ-Kz3oN57asMBAjLx8J0KJowji4uKJJ5zcVQaw\",\n    \"refresh_token\": \"b6ae44f7-926a-4180-8083-cccaa68e4931\"\n    // \"access_token\": \"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjViYzAzMGYzLTE2ODItNDYxYS04ZjVkLTI1NzVmZWUwNWY5OCIsInVzZXJfaWQiOjQxLCJpc3MiOiIiLCJuYW1lIjoiRHdpIFdhaHl1ZGkiLCJlbWFpbCI6ImR3aXdhaHl1ZGkxOTk2QGdtYWlsLmNvbSIsImFkZHJlc3MiOiJDaXJjbGUgU3RyZWV0LCBOby4xLCBCYW5kdW5nLCBXZXN0IEphdmEiLCJpYXQiOjE3MzAxMTc1NzMsImV4cCI6MTczMDExNzg3M30.HpgMpPP4wAaX_JXte-xIe2LxYiGwbO0el8ooYCSFJANXnO4A5moWTTbvWUpUx0quxyi8-iyP4ZqS9bOshr-Eq8W9mm10PhuKaT0IaC5sViBilXqlP2f6wDUulXWiPliejQLSf9xOyXUj-QzHyhwreUOHJpAttMrksfGnvlyzQu97PzEeUM6yIwc0EQRiW9sVRrMiVzdZkl9g7fLGor_DzvBGOXA-LsjwErtge-TVTi7gOtucPwL8P2v1xdT2IIKrMrXKOyYrpBKsDfA5M5AZVcJFsIURMkEHoYvbUcSxJFgN7WXGpL6nh_6Tq66bScO2i0Hg0n9TPHz1LAP85xKPnA\",\n    // \"refresh_token\": \"fb67cd05-c80f-41cb-b3a9-bf7f24ab9a83\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/refresh_token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"refresh_token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

@@ -45,6 +45,7 @@ func NewAuthDelivery(router *gin.Engine, service auth.ServiceInterface, pool *pg
 	router.POST("/api/logout", handler.logOut)
 	router.PUT("/api/email/verification", handler.emailVerification)
 	router.PUT("/api/email/unverification", handler.emailUnVerification)
+	router.POST("/api/auth/refresh_token", handler.refreshToken)
 }
 
 func translateError(trans ut.Translator, err error) (errTrans []string) {
@@ -104,16 +105,15 @@ func (d *authDelivery) logIn(c *gin.Context) {
 		return
 	}
 
-	user, token, code, err := d.service.LogIn(auth.LoginRequest(request))
+	user, accessToken, refreshToken, code, err := d.service.LogIn(auth.LoginRequest(request))
 	if err != nil {
 		responses.ErrorJSON(c, code, []string{err.Error()}, c.Request.RemoteAddr)
 		return
 	}
 
-	respBody := toSignUpResponse(user)
+	respBody := toLoginResponse(user, accessToken, refreshToken)
 
 	response := responses.SuccessWithDataResponse(respBody, 200, "Login success")
-	c.Header("Authorization", token)
 	c.IndentedJSON(200, response)
 }
 
@@ -142,7 +142,7 @@ func (d *authDelivery) emailVerification(c *gin.Context) {
 		return
 	}
 
-	code, err := d.service.EmailVerification(authPayload.UserID, authPayload.Email)
+	code, err := d.service.EmailVerification(*authPayload)
 	if err != nil {
 		responses.ErrorJSON(c, code, []string{err.Error()}, c.Request.RemoteAddr)
 		return
@@ -167,5 +167,35 @@ func (d *authDelivery) emailUnVerification(c *gin.Context) {
 	}
 
 	response := responses.SuccessResponse("user is unverify and deleted")
+	c.IndentedJSON(200, response)
+}
+
+func (d *authDelivery) refreshToken(c *gin.Context) {
+	var request refreshTokenRequest
+
+	err := c.BindJSON(&request)
+	if err != nil {
+		return
+	}
+
+	err = d.validate.Struct(request)
+	if err != nil {
+		errTranslated := translateError(d.trans, err)
+		responses.ErrorJSON(c, 422, errTranslated, c.Request.RemoteAddr)
+		return
+	}
+
+	newRefreshToken, newAccessToken, code, err := d.service.RefreshToken(request.RefreshToken, request.AccessToken)
+	if err != nil {
+		responses.ErrorJSON(c, code, []string{err.Error()}, c.Request.RemoteAddr)
+		return
+	}
+
+	respBody := refreshTokenResponse{
+		RefreshToken: newRefreshToken,
+		AccessToken:  newAccessToken,
+	}
+
+	response := responses.SuccessWithDataResponse(respBody, 200, "refresh token success")
 	c.IndentedJSON(200, response)
 }

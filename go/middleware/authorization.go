@@ -36,6 +36,10 @@ func AuthMiddleware(ctx context.Context, pool *pgxpool.Pool, client *redis.Clien
 			c.Next()
 			return
 		}
+		if c.Request.RequestURI == "/api/auth/refresh_token" {
+			c.Next()
+			return
+		}
 
 		key, err := LoadKey(ctx, pool)
 		if err != nil {
@@ -170,7 +174,7 @@ func ReadToken(authHeader string, key *rsa.PrivateKey) (*auth.JwtPayload, error)
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse token, msg: %v", err)
 	}
 
 	if !jwtToken.Valid {

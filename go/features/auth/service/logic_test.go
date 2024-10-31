@@ -214,10 +214,11 @@ func TestLogIn(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			res, token, code, err := serviceTest.LogIn(test.input)
+			res, accessToken, refreshToken, code, err := serviceTest.LogIn(test.input)
 			if !test.err {
 				require.NoError(t, err)
-				assert.NotEmpty(t, token)
+				assert.NotEmpty(t, accessToken)
+				assert.NotEmpty(t, refreshToken)
 				assert.Equal(t, 200, code)
 				user.Fullname = res.Fullname
 
@@ -234,7 +235,8 @@ func TestLogIn(t *testing.T) {
 				assert.False(t, res.IsVerified)
 			} else {
 				require.Error(t, err)
-				assert.Empty(t, token)
+				assert.Empty(t, accessToken)
+				assert.Empty(t, refreshToken)
 				assert.Equal(t, 401, code)
 				assert.Nil(t, res)
 			}
@@ -310,13 +312,25 @@ func TestSendEmailVerification(t *testing.T) {
 }
 
 func TestEmailVerification(t *testing.T) {
+	key, err := repoTest.LoadKey()
+	require.NoError(t, err)
+	require.NotNil(t, key)
+
 	go func() {
 		for i := 0; i < 5; i++ {
 			go t.Run("success", func(t *testing.T) {
 				user, _ := createUser(t)
 				require.NotNil(t, user)
 
-				code, err := serviceTest.EmailVerification(user.ID, user.Email)
+				token, err := middleware.CreateToken(*user, 5, key)
+				require.NoError(t, err)
+				require.NotZero(t, len(token))
+
+				payload, err := middleware.ReadToken("Bearer "+token, key)
+				require.NoError(t, err)
+				require.NotNil(t, payload)
+
+				code, err := serviceTest.EmailVerification(*payload)
 				require.NoError(t, err)
 				assert.Zero(t, code)
 
@@ -331,7 +345,16 @@ func TestEmailVerification(t *testing.T) {
 		user, _ := createUser(t)
 		require.NotNil(t, user)
 
-		code, err := serviceTest.EmailVerification(user.ID, "a"+user.Email)
+		token, err := middleware.CreateToken(*user, 5, key)
+		require.NoError(t, err)
+		require.NotZero(t, len(token))
+
+		payload, err := middleware.ReadToken("Bearer "+token, key)
+		require.NoError(t, err)
+		require.NotZero(t, len(token))
+
+		payload.Email = "a" + payload.Email
+		code, err := serviceTest.EmailVerification(*payload)
 		require.Error(t, err)
 		assert.Equal(t, 400, code)
 
@@ -344,7 +367,16 @@ func TestEmailVerification(t *testing.T) {
 		user, _ := createUser(t)
 		require.NotNil(t, user)
 
-		code, err := serviceTest.EmailVerification(0, user.Email)
+		token, err := middleware.CreateToken(*user, 5, key)
+		require.NoError(t, err)
+		require.NotZero(t, len(token))
+
+		payload, err := middleware.ReadToken("Bearer "+token, key)
+		require.NoError(t, err)
+		require.NotZero(t, len(token))
+
+		payload.UserID = 0
+		code, err := serviceTest.EmailVerification(*payload)
 		require.Error(t, err)
 		assert.Equal(t, 400, code)
 
