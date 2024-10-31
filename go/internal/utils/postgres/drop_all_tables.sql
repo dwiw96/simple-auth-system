@@ -1,5 +1,0 @@
-BEGIN;
-DROP TABLE IF EXISTS emails_changes;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS marital_status;
-COMMIT;
