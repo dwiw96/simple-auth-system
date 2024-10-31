@@ -1,0 +1,16 @@
+@startuml /api/email_unverification
+Actor user as u
+Participant frontend as fe
+Participant backend as be
+Database postgresql as pg #mediumblue
+
+u -> fe ++ #Gold : click verification link
+activate u  #Gold
+deactivate u
+fe -> be --++ #Gold : send token
+be -> be : validating token
+be -> pg ++ #Gold : delete user data
+deactivate pg
+be --> fe --++ #Gold : send response
+deactivate fe
+@enduml

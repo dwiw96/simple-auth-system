@@ -63,6 +63,14 @@ type JwtPayload struct {
 	Exp     int64     `json:"exp"`
 }
 
+type RefreshTokenWhitelist struct {
+	ID           int64
+	UserID       int64
+	RefreshToken uuid.UUID
+	ExpiresAt    time.Time
+	CreatedAt    time.Time
+}
+
 type RepositoryInterface interface {
 	CheckEmail(email string) (result int, err error)
 	ReadUser(email string) (result *User, err error)
@@ -71,17 +79,23 @@ type RepositoryInterface interface {
 	LoadKey() (key *rsa.PrivateKey, err error)
 	UpdateUserIsVerified(id int64, email string) (err error)
 	DeleteUser(id int64, email string) (err error)
+	ReadRefreshToken(userID int64, refreshToken uuid.UUID) (res *RefreshTokenWhitelist, err error)
+	InsertRefreshToken(userID int64, refreshToken uuid.UUID) (err error)
+	DeleteRefreshToken(userID int64) (err error)
+	UpdateRefreshToken(userID int64, refreshToken uuid.UUID) (err error)
 }
 
 type ServiceInterface interface {
 	SignUp(input SignupRequest) (user *User, code int, err error)
-	LogIn(input LoginRequest) (user *User, token string, code int, err error)
+	LogIn(input LoginRequest) (user *User, accessToken, refreshToken string, code int, err error)
 	LogOut(payload JwtPayload) error
 	SendEmailVerification(user User) (code int, err error)
-	EmailVerification(userID int64, email string) (code int, err error)
+	EmailVerification(payload JwtPayload) (code int, err error)
 	DeleteUser(userID int64, email string) (code int, err error)
+	RefreshToken(refreshToken, accessToken string) (newRefreshToken, newAccessToken string, code int, err error)
 }
 
 type CacheInterface interface {
 	CachingBlockedToken(payload JwtPayload) error
+	CheckBlockedToken(payload JwtPayload) error
 }

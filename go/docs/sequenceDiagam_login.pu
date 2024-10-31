@@ -1,0 +1,23 @@
+@startuml /api/login
+Actor user as u
+Participant frontend as fe
+Participant backend as be
+Database postgresql as pg #MediumBlue
+
+u -> fe ++ #Gold : form data(email, password)
+activate u #Gold
+deactivate u
+fe -> be --++ #Gold : request
+be -> pg ++ #Gold : read user data
+pg --> be : send user data
+deactivate pg
+be -> be : verify password
+be -> pg ++ #Gold : read private key
+pg --> be -- : send private key
+be -> be : create access &\nrefresh token
+be -> pg ++ #Gold : save access token
+deactivate pg
+be --> fe --++ #Gold : send token(access & refresh token)
+fe --> u --++ #Gold : send response
+deactivate u
+@enduml

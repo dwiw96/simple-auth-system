@@ -1,0 +1,17 @@
+@startuml /api/logout
+Participant frontend as fe
+Participant backend as be
+Database postgresql as pg #MediumBlue
+Database redis as rd #Red
+
+fe -> be ++ #Gold : send request\n(access token)
+activate fe #Gold
+deactivate fe
+be -> be : verify access token
+be -> pg ++ #Gold : delete refresh token
+deactivate pg
+be -> rd ++ #Gold : caching access token
+deactivate rd
+be --> fe ++ #Gold : send response
+deactivate fe
+@enduml
