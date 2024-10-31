@@ -23,8 +23,32 @@ func NewAuthCache(client *redis.Client, ctx context.Context) auth.CacheInterface
 }
 
 func (c *authCache) CachingBlockedToken(payload auth.JwtPayload) error {
-	iat := time.Unix(payload.Iat, 0)
+	now := time.Now().UTC()
 	exp := time.Unix(payload.Exp, 0)
-	duration := time.Duration(exp.Sub(iat).Nanoseconds())
-	return c.client.Set(c.ctx, fmt.Sprint("block ", payload.ID), payload.UserID, duration).Err()
+	fmt.Println("now:", now)
+	fmt.Println("exp:", exp)
+	duration := time.Duration(exp.Sub(now).Nanoseconds())
+	fmt.Println("ttl duration:", duration)
+	if duration <= 0 {
+		return nil
+	}
+
+	err := c.client.Set(c.ctx, fmt.Sprint("block ", payload.ID), payload.UserID, duration).Err()
+	if err != nil {
+		return fmt.Errorf("failed to caching token, msg: %v", err)
+	}
+
+	return nil
+}
+
+func (r *authCache) CheckBlockedToken(payload auth.JwtPayload) error {
+	check, err := r.client.Exists(r.ctx, "block "+payload.ID.String()).Result()
+	if err != nil {
+		return err
+	}
+	if check != 0 {
+		return fmt.Errorf("token is blacklist")
+	}
+
+	return nil
 }
